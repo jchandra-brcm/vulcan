@@ -37,6 +37,7 @@
 #include <linux/completion.h>
 #include <linux/of.h>
 #include <linux/irq_work.h>
+#include <linux/perf/arm_pmu.h>
 
 #include <asm/alternative.h>
 #include <asm/atomic.h>
@@ -540,6 +541,7 @@ acpi_map_gic_cpu_interface(struct acpi_madt_generic_interrupt *processor)
 			return;
 		}
 		bootcpu_valid = true;
+		arm_pmu_parse_acpi(0, processor);
 		return;
 	}
 
@@ -561,6 +563,9 @@ acpi_map_gic_cpu_interface(struct acpi_madt_generic_interrupt *processor)
 	acpi_set_mailbox_entry(cpu_count, processor);
 
 	early_map_cpu_to_node(cpu_count, acpi_numa_get_nid(cpu_count, hwid));
+
+	/* get PMU irq info */
+	arm_pmu_parse_acpi(cpu_count, processor);
 
 	cpu_count++;
 }
