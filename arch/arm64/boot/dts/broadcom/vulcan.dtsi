@@ -142,6 +142,18 @@
 			clocks = <&clk125mhz>;
 			clock-names = "apb_pclk";
 		};
+
+		gpio0: gpio@402000100 {
+			compatible = "brcm,vulcan-gpio";
+			reg = <0x4 0x2000100 0x0 0x1000>;
+			#gpio-cells = <2>;
+			gpio-controller;
+
+			#interrupt-cells = <2>;
+			interrupt-parent = <&gic>;
+			interrupts = <0 67 0x0>;
+			interrupt-controller;
+		};
 	};
 
 };
