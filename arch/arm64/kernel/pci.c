@@ -17,6 +17,7 @@
 #include <linux/mm.h>
 #include <linux/of_pci.h>
 #include <linux/of_platform.h>
+#include <linux/pci.h>
 #include <linux/slab.h>
 
 /*
@@ -75,6 +76,12 @@ int raw_pci_write(unsigned int domain, unsigned int bus,
 }
 
 #ifdef CONFIG_ACPI
+
+int acpi_pci_bus_find_domain_nr(struct pci_bus *bus)
+{
+	return 0;
+}
+
 /* Root bridge scanning */
 struct pci_bus *pci_acpi_scan_root(struct acpi_pci_root *root)
 {
