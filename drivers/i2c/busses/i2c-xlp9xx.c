@@ -13,6 +13,7 @@
 #include <linux/io.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/acpi.h>
 #include <linux/platform_device.h>
 
 #define XLP9XX_I2C_DIV			0x0
@@ -341,11 +342,10 @@ static struct i2c_algorithm xlp9xx_i2c_algo = {
 static int xlp9xx_i2c_get_frequency(struct platform_device *pdev,
 				    struct xlp9xx_i2c_dev *priv)
 {
-	struct device_node *np = pdev->dev.of_node;
 	u32 freq;
 	int err;
 
-	err = of_property_read_u32(np, "clock-frequency", &freq);
+	err = device_property_read_u32(&pdev->dev, "clock-frequency", &freq);
 	if (err) {
 		freq = XLP9XX_I2C_DEFAULT_FREQ;
 		dev_dbg(&pdev->dev, "using default frequency %u\n", freq);
@@ -429,12 +429,21 @@ static const struct of_device_id xlp9xx_i2c_of_match[] = {
 	{ /* sentinel */ },
 };
 
+#ifdef CONFIG_ACPI
+static const struct acpi_device_id vulcan_i2c_acpi_ids[] = {
+	{"BRCM9007", 0},
+	{}
+};
+MODULE_DEVICE_TABLE(acpi, vulcan_i2c_acpi_ids);
+#endif
+
 static struct platform_driver xlp9xx_i2c_driver = {
 	.probe = xlp9xx_i2c_probe,
 	.remove = xlp9xx_i2c_remove,
 	.driver = {
 		.name = "xlp9xx-i2c",
 		.of_match_table = xlp9xx_i2c_of_match,
+		.acpi_match_table = ACPI_PTR(vulcan_i2c_acpi_ids),
 	},
 };
 
