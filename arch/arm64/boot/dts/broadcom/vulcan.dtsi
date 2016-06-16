@@ -142,6 +142,28 @@
 			clocks = <&clk125mhz>;
 			clock-names = "apb_pclk";
 		};
+
+		gpio0: gpio@402000100 {
+			compatible = "brcm,vulcan-gpio";
+			reg = <0x4 0x2000100 0x0 0x1000>;
+			#gpio-cells = <2>;
+			gpio-controller;
+
+			#interrupt-cells = <2>;
+			interrupt-parent = <&gic>;
+			interrupts = <0 67 0x0>;
+			interrupt-controller;
+		};
+
+		i2c0: i2c@402180000 {
+			compatible = "netlogic,xlp980-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x04 0x02180000 0x0 0x500>;
+			clock-frequency = <35000>;
+			interrupt-parent = <&gic>;
+			interrupts = <GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>;
+		};
 	};
 
 };
