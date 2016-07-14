@@ -1593,7 +1593,7 @@ static int __init its_probe_one(struct resource *res,
 
 	its_enable_quirks(its);
 
-	err = its_alloc_tables(node->full_name, its);
+	err = its_alloc_tables("ITS", its);
 	if (err)
 		goto out_free_cmd;
 
