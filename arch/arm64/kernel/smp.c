@@ -37,6 +37,7 @@
 #include <linux/completion.h>
 #include <linux/of.h>
 #include <linux/irq_work.h>
+#include <linux/perf/arm_pmu.h>
 
 #include <asm/alternative.h>
 #include <asm/atomic.h>
@@ -506,13 +507,14 @@ static unsigned int cpu_count = 1;
 
 #ifdef CONFIG_ACPI
 /*
- * acpi_map_gic_cpu_interface - parse processor MADT entry
+ * acpi_verify_and_map_madt - parse processor MADT entry
  *
  * Carry out sanity checks on MADT processor entry and initialize
- * cpu_logical_map on success
+ * cpu_logical_map, the ACPI parking protocol, NUMA mapping
+ * and the PMU interrupts on success
  */
 static void __init
-acpi_map_gic_cpu_interface(struct acpi_madt_generic_interrupt *processor)
+acpi_verify_and_map_madt(struct acpi_madt_generic_interrupt *processor)
 {
 	u64 hwid = processor->arm_mpidr;
 
@@ -539,6 +541,7 @@ acpi_map_gic_cpu_interface(struct acpi_madt_generic_interrupt *processor)
 			return;
 		}
 		bootcpu_valid = true;
+		arm_pmu_parse_acpi(0, processor);
 		return;
 	}
 
@@ -559,13 +562,16 @@ acpi_map_gic_cpu_interface(struct acpi_madt_generic_interrupt *processor)
 	 */
 	acpi_set_mailbox_entry(cpu_count, processor);
 
+	/* get PMU irq info */
+	arm_pmu_parse_acpi(cpu_count, processor);
+
 	early_map_cpu_to_node(cpu_count, acpi_numa_get_nid(cpu_count, hwid));
 
 	cpu_count++;
 }
 
 static int __init
-acpi_parse_gic_cpu_interface(struct acpi_subtable_header *header,
+acpi_parse_madt_common(struct acpi_subtable_header *header,
 			     const unsigned long end)
 {
 	struct acpi_madt_generic_interrupt *processor;
@@ -576,7 +582,7 @@ acpi_parse_gic_cpu_interface(struct acpi_subtable_header *header,
 
 	acpi_table_print_madt_entry(header);
 
-	acpi_map_gic_cpu_interface(processor);
+	acpi_verify_and_map_madt(processor);
 
 	return 0;
 }
@@ -659,7 +665,7 @@ void __init smp_init_cpus(void)
 		 * we need for SMP init
 		 */
 		acpi_table_parse_madt(ACPI_MADT_TYPE_GENERIC_INTERRUPT,
-				      acpi_parse_gic_cpu_interface, 0);
+				      acpi_parse_madt_common, 0);
 
 	if (cpu_count > NR_CPUS)
 		pr_warn("no. of cores (%d) greater than configured maximum of %d - clipping\n",
