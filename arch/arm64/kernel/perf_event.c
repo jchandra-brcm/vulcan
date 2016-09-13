@@ -1083,6 +1083,8 @@ static const struct of_device_id armv8_pmu_of_device_ids[] = {
  * aren't supported by the current PMU are disabled.
  */
 static const struct pmu_probe_info armv8_pmu_probe_table[] = {
+	PMU_PROBE(BRCM_CPU_PART_VULCAN << MIDR_PARTNUM_SHIFT, MIDR_PARTNUM_MASK,
+		  armv8_vulcan_pmu_init),
 	PMU_PROBE(0, 0, armv8_pmuv3_init), /* enable all defined counters */
 	{ /* sentinel value */ }
 };
